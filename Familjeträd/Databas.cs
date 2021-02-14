@@ -12,14 +12,14 @@ namespace Familjeträd
     class Databas
     {
         public string ConnectionString { get; set; } = "Data Source=DESKTOP-NJ9EFR0; Integrated Security = True;database={0}";
-        public string DatabaseName { get; set; } = "Familjeträd";
+        public string Familjeträd { get; set; } = "Familjeträd";
         public string Master { get; set; } = "master";
-        internal long SQL(string sqlString, params (string, string)[] parameters)
+        internal long SQL(string sqlString, string databaseName, params (string, string)[] parameters)
         {
             long rows = 0;
             try
             {
-                var conn = string.Format(ConnectionString, DatabaseName);
+                var conn = string.Format(ConnectionString, databaseName);
                 using (var cnn = new SqlConnection(conn))
                 {
                     cnn.Open();
@@ -79,20 +79,25 @@ namespace Familjeträd
                 command.Parameters.AddWithValue(item.Item1, item.Item2);
             }
         }
-        internal bool FinnsDatabas(string name)
+        internal bool DoesDatabasExist(string name)
         {
             var databas = GetDataTable("SELECT name FROM sys.databases WHERE name = @name", Master, ("@name", name));
             return databas.Rows.Count > 0;
         }
 
-        internal void CreateDatabase(string databaseName)
+        internal void CreateDatabase(string databaseName, string databaseConnection)
         {
-            SQL($"CREATE DATABASE {databaseName}");
+            SQL($"CREATE DATABASE {databaseName}", databaseConnection);
         }
 
-        internal void CreateDatatable(string datatableName, string fields)
+        internal void UseDatabase(string databaseName, string databaseConnection)
         {
-            SQL($"CREATE TABLE {datatableName} ({fields});");
+            SQL($"USE {databaseName}", databaseConnection);
+        }
+
+        internal void CreateDatatable(string datatableName, string fields, string databaseConnection)
+        {
+            SQL($"CREATE TABLE {datatableName} ({fields});", databaseConnection);
         }
     }
 }

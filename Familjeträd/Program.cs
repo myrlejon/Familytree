@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Familjeträd
 {
-    class Program
+    class Program : Databas
     {
         static void Main(string[] args)
         {
-
+            CRUD.Intro();
+            CRUD.Meny();
         }
     }
 }
