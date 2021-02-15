@@ -99,5 +99,6 @@ namespace Familjeträd
         {
             SQL($"CREATE TABLE {datatableName} ({fields});", databaseConnection);
         }
+
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace Familjeträd
 {
@@ -27,12 +28,12 @@ namespace Familjeträd
                             död int,
                             mor varchar (50),
                             far varchar (50)", db.Familjeträd);
-                Console.WriteLine("Skapade databasen.\n");
-                Console.ReadLine();
+                Console.WriteLine($"Skapade databasen {db.Familjeträd}");
             }
             else if (db.DoesDatabasExist(db.Familjeträd))
             {
                 Console.WriteLine("Kör menyn.");
+                Console.WriteLine($"Aktuell databas: {db.Familjeträd}");
             }
         }
 
@@ -43,18 +44,35 @@ namespace Familjeträd
             {
                 var db = new Databas();
                 var crud = new CRUD();
-                Console.WriteLine($"Aktuell databas: {db.Familjeträd}");
-                Console.WriteLine("\n(1) Skapa en ny person.\n(2) Redigera en person.\n(3) Radera en person.\n(4) Lista upp alla personer.");
-                Console.WriteLine("(5) Visa mor/far till en person.\n(6) Visa syskon till en person.\n");
+                Console.WriteLine("\n(1) Skapa en ny person.\n(2) Redigera en person.\n(3) Sök på en person.\n(4) Lista upp alla personer.");
+                Console.WriteLine("(5) Visa mor/far till en person.\n(6) Visa syskon till en person.\n(7) Radera en person.\n");
                 string choice = Console.ReadLine();
                 
                 if (choice == "1")
                 {
-                    crud.CreateInput();
+                    crud.CreatePerson();
                 }
                 else if (choice == "2")
                 {
-                    
+                    Console.WriteLine("Vem vill du redigera?");
+                    string namn = Console.ReadLine();
+                    Console.WriteLine("Vad vill du ändra?");
+                    Console.WriteLine("(1) Förnamn (2) Efternamn (3) Ålder (4) Stad (5) Födelsedatum (6) Dödsår (7) Mor (8) Far");
+                }
+                else if (choice == "3")
+                {
+                    Console.WriteLine("Vem vill du söka på?\n");
+                    string namn = Console.ReadLine();
+                    var person = crud.Read(namn);
+                    Print(person);
+                }
+                else if (choice == "4")
+                {
+
+                }
+                else if (choice == "5")
+                {
+
                 }
             }
         }
@@ -87,6 +105,28 @@ namespace Familjeträd
             }
         }
 
+        public void CreateParent(string parentFirstName, string parentLastName)
+        {
+            var db = new Databas();
+            var sqlString = "INSERT INTO Personer (Förnamn, Efternamn) VALUES(@Förnamn, @Efternamn)";
+            try
+            {
+                var connString = string.Format(db.ConnectionString, db.Familjeträd);
+                using (var conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    var cmd = new SqlCommand(sqlString, conn);
+                    cmd.Parameters.AddWithValue("@Förnamn", parentFirstName);
+                    cmd.Parameters.AddWithValue("@Efternamn", parentLastName);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (System.Exception except)
+            {
+                System.Console.WriteLine(except.Message);
+            }
+        }
+
         public void Update(Person person)
         {
             var db = new Databas();
@@ -103,11 +143,79 @@ namespace Familjeträd
                      ("@ID", person.ID.ToString()));
         }
 
-        public void CreateInput()
+        public Person Read(string name)
+        {
+            var db = new Databas();
+            DataTable dt;
+
+            if (name.Contains(" "))
+            {
+                var names = name.Split(' ');
+                var lastName = names[names.Length - 1];
+                dt = db.GetDataTable("SELECT TOP 1 * FROM Personer WHERE Förnamn LIKE @Förnamn AND Efternamn LIKE @Efternamn", Familjeträd,
+                    ("@Förnamn", names[0]), ("@Efternamn", lastName));
+            }
+            else
+            {
+                dt = db.GetDataTable("SELECT TOP 1 * FROM Personer WHERE Förnamn LIKE @name OR Efternamn LIKE @name ", Familjeträd, ("@name", name));
+            }
+
+            if (dt.Rows.Count == 0)
+                return null;
+
+            return GetPersonObject(dt.Rows[0]);
+        }
+
+        private static void Print(Person person)
+        {
+            if (person != null)
+            {
+                Console.WriteLine($"{person.Förnamn} {person.Efternamn}, är {person.Ålder} år och bor i {person.Stad}.");
+                Console.WriteLine($"{person.Förnamn} föddes {person.Född} och dog {person.Död}.");
+                Console.WriteLine($"ID: {person.ID}");
+            }
+            else
+            {
+                Console.WriteLine("Person not found");
+            }
+        }
+
+        private static Person GetPersonObject(DataRow row)
+        {
+            return new Person
+            {
+                Förnamn = row["Förnamn"].ToString(),
+                Efternamn = row["Efternamn"].ToString(),
+                Ålder = (int)row["Ålder"],  
+                Stad = row["Stad"].ToString(),
+                Född = (int)row["Född"],
+                Död = (int)row["Död"],
+                Mor = row["Mor"].ToString(),
+                Far = row["Far"].ToString(),
+                ID = (int)row["ID".ToString()]
+            };
+        }
+
+
+        //public void Delete(string name)
+        //{
+        //    var person = Read(name);
+        //    if (person != null Delete(person));
+        //}
+
+        //public string GetPersonID(int id)
+        //{
+        //    var db = new Databas();
+        //    db.SQL(@"SELECT TOP 1 * FROM Personer WHERE ID = @ID", Familjeträd, ("@ID", id.ToString()));
+        //    return 
+
+        //}
+
+        public void CreatePerson()
         {
             var crud = new CRUD();
             var person = new Person();
-            Console.WriteLine("Mata in värden för den nya personen.");
+            Console.WriteLine("Mata in värden för personen.");
             Console.WriteLine("Förnamn: ");
             person.Förnamn = Console.ReadLine();
             Console.WriteLine("Efternamn: ");
@@ -128,7 +236,13 @@ namespace Familjeträd
             Console.WriteLine("Far: ");
             person.Far = Console.ReadLine();
             crud.Create(person);
-            Console.WriteLine($"Skapade personen {person.Förnamn} {person.Efternamn}\tID: {person.ID}");
+            crud.CreateParent(person.Mor, person.Efternamn);
+            crud.CreateParent(person.Far, person.Efternamn);
+            Console.WriteLine($"Skapade personen {person.Förnamn} {person.Efternamn}");
+            Console.WriteLine($"Skapade föräldern {person.Mor} {person.Efternamn}");
+            Console.WriteLine($"Skapade föräldern {person.Far} {person.Efternamn}");
+
+            //TODO: Skapa ett nytt table i SQL för föräldrar.
         }
     }
 }
