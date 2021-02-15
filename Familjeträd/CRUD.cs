@@ -38,30 +38,28 @@ namespace Familjeträd
 
         public static void Meny()
         {
-            var db = new Databas();
-            var crud = new CRUD();
-            Console.WriteLine($"Aktuell databas: {db.Familjeträd}");
-            Console.WriteLine("\n\n(1) Skapa en ny person.\n(2) Redigera en person.\n(3) Radera en person.\n(4) Lista upp alla personer.");
-            Console.WriteLine("(5) Visa mor/far till en person.\n(6) Visa syskon till en person.");
-            string choice = Console.ReadLine();
-            if (choice == "1")
+            bool menyLoop = true;
+            while (menyLoop)
             {
-                var person = new Person
+                var db = new Databas();
+                var crud = new CRUD();
+                Console.WriteLine($"Aktuell databas: {db.Familjeträd}");
+                Console.WriteLine("\n(1) Skapa en ny person.\n(2) Redigera en person.\n(3) Radera en person.\n(4) Lista upp alla personer.");
+                Console.WriteLine("(5) Visa mor/far till en person.\n(6) Visa syskon till en person.\n");
+                string choice = Console.ReadLine();
+                
+                if (choice == "1")
                 {
-                    Förnamn = "Nils",
-                    Efternamn = "Odén",
-                    Ålder = 21,
-                    Stad = "Onsala",
-                    Född = 1999,
-                    Död = 2090,
-                    Mor = "Åsa",
-                    Far = "Svante"
-                };
-                crud.Create(person);
+                    crud.CreateInput();
+                }
+                else if (choice == "2")
+                {
+                    
+                }
             }
         }
 
-        internal void Create(Person person)
+        public void Create(Person person)
         {
             var db = new Databas();
             var sqlString = "INSERT INTO Personer (Förnamn, Efternamn, Ålder, Stad, Född, Död, Mor, Far) VALUES(@Förnamn, @Efternamn, @Ålder, @Stad, @Född, @Död, @Mor, @Far)";
@@ -87,6 +85,50 @@ namespace Familjeträd
             {
                 System.Console.WriteLine(except.Message);
             }
+        }
+
+        public void Update(Person person)
+        {
+            var db = new Databas();
+            db.SQL(@"UPDATE Personer SET Förnamn = @Förnamn, Efternamn = @Efternamn, 
+                     Ålder = @Ålder, Stad = @Stad, Född = @Född, Död = @Död, Mor = @Mor, Far = @Far WHERE ID = @ID", db.Familjeträd,
+                     ("@Förnamn", person.Förnamn),
+                     ("@Efternamn", person.Efternamn),
+                     ("@Ålder", person.Ålder.ToString()),
+                     ("@Stad", person.Stad),
+                     ("@Född", person.Född.ToString()),
+                     ("@Död", person.Död.ToString()),
+                     ("@Mor", person.Mor),
+                     ("@Far", person.Far),
+                     ("@ID", person.ID.ToString()));
+        }
+
+        public void CreateInput()
+        {
+            var crud = new CRUD();
+            var person = new Person();
+            Console.WriteLine("Mata in värden för den nya personen.");
+            Console.WriteLine("Förnamn: ");
+            person.Förnamn = Console.ReadLine();
+            Console.WriteLine("Efternamn: ");
+            person.Efternamn = Console.ReadLine();
+            Console.WriteLine("Ålder: ");
+            string ålderInput = Console.ReadLine();
+            person.Ålder = Convert.ToInt32(ålderInput);
+            Console.WriteLine("Stad: ");
+            person.Stad = Console.ReadLine();
+            Console.WriteLine("Födelseår: ");
+            string föddInput = Console.ReadLine();
+            person.Född = Convert.ToInt32(föddInput);
+            Console.WriteLine("Dödsår: ");
+            string dödInput = Console.ReadLine();
+            person.Död = Convert.ToInt32(dödInput);
+            Console.WriteLine("Mor: ");
+            person.Mor = Console.ReadLine();
+            Console.WriteLine("Far: ");
+            person.Far = Console.ReadLine();
+            crud.Create(person);
+            Console.WriteLine($"Skapade personen {person.Förnamn} {person.Efternamn}\tID: {person.ID}");
         }
     }
 }

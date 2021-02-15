@@ -8,6 +8,7 @@ namespace Familjeträd
 {
     class Person
     {
+        public int ID { get; set; }
         public string Förnamn { get; set; }
         public string Efternamn { get; set; }
         public int Ålder { get; set; }
