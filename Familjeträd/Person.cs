@@ -17,5 +17,8 @@ namespace Familjeträd
         public int Död { get; set; }
         public string Mor { get; set; }
         public string Far { get; set; }
+        public int MorID { get; set; }
+        public int FarID { get; set; }
+        public int BarnID { get; set; }
     }
 }
