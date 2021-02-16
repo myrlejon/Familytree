@@ -50,21 +50,18 @@ namespace Familjeträd
                 Console.WriteLine("\n(1) Skapa en ny person.\n(2) Redigera en person.\n(3) Sök på en person.\n(4) Lista upp alla personer.");
                 Console.WriteLine("(5) Visa mor/far till en person.\n(6) Visa syskon till en person.\n(7) Radera en person.\n");
                 string choice = Console.ReadLine();
-                
+
                 if (choice == "1")
                 {
                     crud.CreatePerson();
                 }
                 else if (choice == "2")
                 {
-                    Console.WriteLine("Vem vill du redigera?");
-                    string namn = Console.ReadLine();
-                    Console.WriteLine("Vad vill du ändra?");
-                    Console.WriteLine("(1) Förnamn (2) Efternamn (3) Ålder (4) Stad (5) Födelsedatum (6) Dödsår (7) Mor (8) Far (9) Barn");
+                    crud.EditPerson();
                 }
                 else if (choice == "3")
                 {
-                    Console.WriteLine("Vem vill du söka på?\n");
+                    Console.WriteLine("Vem vill du söka på?");
                     string namn = Console.ReadLine();
                     var person = crud.Read(namn);
                     Print(person);
@@ -192,6 +189,19 @@ namespace Familjeträd
             }
         }
 
+        private static bool DoesPersonExist(Person person)
+        {
+            if (person != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // TODO: Skapa en GetPersonObjekt för föräldrar, så att personer som har rader med NULL kan läsas in ändå.
         private static Person GetPersonObject(DataRow row)
         {
             return new Person
@@ -266,6 +276,126 @@ namespace Familjeträd
 
             //Skapa en Read för parent, som inte har alla variabler inmatade
             //TODO: if barnID > 0 så skapa en ny read funktion för parent?
+        }
+
+        public void EditPerson()
+        {
+            var crud = new CRUD();
+            Console.WriteLine("Vem vill du redigera?");
+            var namn = Console.ReadLine();
+            var person = crud.Read(namn);
+
+            if (person == null)
+            {
+                Console.WriteLine("\nPersonen existerar inte.");
+            }
+            else if (person != null)
+            {
+                Console.WriteLine("\nVad vill du ändra?");
+                Console.WriteLine("(1) Förnamn\n(2) Efternamn\n(3) Ålder\n(4) Stad \n(5) Födelsedatum \n(6) Dödsår\n(7) Mor \n(8) Far \n(9) Barn\n");
+                var input = Console.ReadLine();
+
+                if (input == "1")
+                {
+                    Console.WriteLine("Skriv in det nya förnamnet.");
+                    person.Förnamn = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Förnamnet ändrades till {person.Förnamn}");
+                }
+                else if (input == "2")
+                {
+                    Console.WriteLine("Skriv in det nya efternamnet.");
+                    person.Efternamn = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Efternamnet ändrades till {person.Efternamn}");
+                }
+                else if (input == "3")
+                {
+                    Console.WriteLine("Skriv in den nya åldern.");
+                    var ageInput = Console.ReadLine();
+                    person.Ålder = Convert.ToInt32(ageInput);
+                    crud.Update(person);
+                    Console.WriteLine($"Åldern ändrades till {person.Ålder}");
+                }
+                else if (input == "4")
+                {
+                    Console.WriteLine("Skriv in den nya staden.");
+                    person.Stad = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Staden ändrades till {person.Stad}");
+                }
+                else if (input == "5")
+                {
+                    Console.WriteLine("Skriv in det nya födelsedatumet.");
+                    var föddInput = Console.ReadLine();
+                    person.Född = Convert.ToInt32(föddInput);
+                    crud.Update(person);
+                    Console.WriteLine($"Födelsedatumet ändrades till {person.Född}");
+                }
+                else if (input == "6")
+                {
+                    Console.WriteLine("Skriv in det nya dödsdatumet.");
+                    var dödInput = Console.ReadLine();
+                    person.Död = Convert.ToInt32(dödInput);
+                    crud.Update(person);
+                    Console.WriteLine($"Dödsdatumet ändrades till {person.Död}");
+                }
+                // TODO: Ändra så att ID ändras till den nya föräldern? Om det inte finns så är det en vanlig redigering.
+                else if (input == "7")
+                {
+                    bool loop = true;
+                    while (loop)
+                    {
+                        Console.WriteLine($"(1) Redigera bara namnet.\n(2) Ändra så att modern inte är släkt med {person.Förnamn}.");
+                        var morInput = Console.ReadLine();
+
+                        if (morInput == "1")
+                        {
+                            var mor = crud.Read($"{person.Mor} {person.Efternamn}");
+                            Console.WriteLine($"Skriv in det nya namnet på modern till {person.Förnamn}.");
+                            person.Mor = Console.ReadLine();
+                            mor.Förnamn = person.Mor;
+                            crud.Update(mor);
+                            crud.Update(person);
+                            Console.WriteLine($"Moderns namn ändrades till {person.Mor}");
+                        }
+                        else if (morInput == "2")
+                        {
+                            var mor = crud.Read(person.MorID.ToString());
+                            Console.WriteLine($"Skriv in det nya namnet på modern till {person.Förnamn}.");
+                            person.Mor = Console.ReadLine();
+                            if (DoesPersonExist(mor))
+                            {
+                                mor.Förnamn = person.Mor;
+                                mor.Efternamn = person.Efternamn;
+                                person.MorID = mor.ID;
+                            }
+                            else if (DoesPersonExist(mor) == false)
+                            {
+
+                                crud.CreatePerson();
+                            }
+                        }
+                    }
+                }
+
+                else if (input == "8")
+                {
+                    Console.WriteLine($"Skriv in den nya fadern till {person.Förnamn}.");
+                    person.Far = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Fadern ändrades till {person.Far}");
+                }
+                else if (input == "9")
+                {
+                    Console.WriteLine($"Skriv in namnet på det nya barnet till {person.Förnamn}.");
+
+                    crud.Update(person);
+                    Console.WriteLine($"Fadern ändrades till {person.Far}");
+                }
+            }
+
+
         }
     }
 }
