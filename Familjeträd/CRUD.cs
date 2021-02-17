@@ -77,6 +77,16 @@ namespace Familjeträd
                 {
                     crud.UpdateValues();
                 }
+                else if (choice == "6")
+                {
+
+                }
+                else if (choice == "7")
+                {
+                    Console.WriteLine("Skriv in namnet på personen du vill radera.");
+                    var delInput = Console.ReadLine(); 
+                    crud.Delete(delInput);
+                }
             }
         }
 
@@ -137,7 +147,9 @@ namespace Familjeträd
         public void Update(Person person)
         {
             var db = new Databas();
-            db.SQL(@"UPDATE Personer SET Förnamn = @Förnamn, Efternamn = @Efternamn, Ålder = @Ålder, Stad = @Stad, Född = @Född, Död = @Död, Mor = @Mor, Far = @Far, MorID = @MorID, FarID = @FarID, BarnID = @BarnID WHERE ID = @ID", db.Familjeträd,
+            db.SQL(@"UPDATE Personer SET Förnamn = @Förnamn, Efternamn = @Efternamn, Ålder = @Ålder,
+                    Stad = @Stad, Född = @Född, Död = @Död, Mor = @Mor, Far = @Far, MorID = @MorID, 
+                    FarID = @FarID, BarnID = @BarnID WHERE ID = @ID", db.Familjeträd,
                          ("@Förnamn", person.Förnamn),
                          ("@Efternamn", person.Efternamn),
                          ("@Ålder", person.Ålder.ToString()),
@@ -185,7 +197,20 @@ namespace Familjeträd
             return GetPersonObject(dt.Rows[0]);
         }
 
-        private static void Print(Person person)
+        public Person ReadID(int ID)
+        {
+            var db = new Databas();
+            DataTable dt;
+
+            dt = db.GetDataTable("SELECT TOP 1 * FROM Personer WHERE ID = @ID", Familjeträd, ("@ID", ID.ToString()));
+
+            if (dt.Rows.Count == 0)
+                return null;
+
+            return GetPersonObject(dt.Rows[0]);
+        }
+
+            private static void Print(Person person)
         {
             if (person != null)
             {
@@ -251,11 +276,64 @@ namespace Familjeträd
         }
 
 
-        //public void Delete(string name)
-        //{
-        //    var person = Read(name);
-        //    if (person != null Delete(person));
-        //}
+        public void Delete(string namn)
+        {
+            var crud = new CRUD();
+            var db = new Databas();
+            var person = Read(namn);
+
+            if (person != null)
+            {
+                var mor = Read($"{person.Mor} {person.Efternamn}");
+                var far = Read($"{person.Far} {person.Efternamn}");
+                var barn = ReadID(person.BarnID);
+
+                if (DoesPersonExist(mor) == true)
+                {
+                    barn.Mor = " ";
+                    barn.MorID = 0;
+                    mor.BarnID = 0;
+
+                    crud.Update(mor);
+                    crud.Update(barn);
+                }
+                else if (DoesPersonExist(far) == true)
+                {
+                    //barn.Far = " ";
+                    //barn.FarID = 0;
+                    far.BarnID = 0;
+
+                    crud.Update(far);
+                    crud.Update(barn);
+                }
+                else if (DoesPersonExist(barn) == true)
+                {
+                    if (barn.MorID == person.ID)
+                    {
+                        barn.MorID = 0;
+                        barn.Mor = " ";
+                        crud.Update(barn);
+                    }
+                    else if (barn.FarID == person.ID)
+                    {
+                        barn.FarID = 0;
+                        barn.Far = " ";
+                        crud.Update(barn);
+                    }
+                }
+
+
+
+                db.SQL("DELETE FROM Personer WHERE Förnamn = @Förnamn AND Efternamn = @Efternamn", Familjeträd, 
+                      ("@Förnamn", person.Förnamn),
+                      ("@Efternamn", person.Efternamn));
+                Console.WriteLine($"Personen har raderats ifrån databasen.");
+            }
+            else if (person == null)
+            {
+                Console.WriteLine("Personen finns inte i databasen.");
+            }
+        }
 
         //public Person GetPersonID(string förnamn, string efternamn)
         //{
