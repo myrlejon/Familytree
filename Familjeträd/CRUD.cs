@@ -27,15 +27,19 @@ namespace Familjeträd
                             förnamn nvarchar(50),
                             efternamn nvarchar(50),
                             ålder int,
-                            stad nvarchar(50),
+                            födelseland nvarchar(50),
+                            födelsestad nvarchar(50),
                             född int,
                             död int,
+                            dödsland nvarchar(50),
+                            dödsstad nvarchar(50),
                             mor nvarchar(50),
                             far nvarchar(50),
                             morID int,
                             farID int,
                             barnID int", db.Familjeträd);
                 Console.WriteLine($"Skapade databasen {db.Familjeträd}");
+                Console.WriteLine("Börja med att skapa personer med hjälp av menyalternativ (1)!");
             }
             else if (db.DoesDatabasExist(db.Familjeträd))
             {
@@ -55,7 +59,7 @@ namespace Familjeträd
                 var db = new Databas();
                 var crud = new CRUD();
                 Console.WriteLine("\n(1) Skapa en ny person.\n(2) Redigera ett värde hos en person.\n(3) Sök på en person.\n(4) Lista upp alla personer.");
-                Console.WriteLine("(5) Uppdatera alla värden på en person\n(6) Visa syskon till en person.\n(7) Speciell sökning\n(8) Radera en person.");
+                Console.WriteLine("(5) Uppdatera alla värden på en person\n(6) Visa syskon till en person.\n(7) Speciell sökning\n(8) Radera en person.\n");
                 string choice = Console.ReadLine();
 
                 if (choice == "1")
@@ -68,10 +72,7 @@ namespace Familjeträd
                 }
                 else if (choice == "3")
                 {
-                    Console.WriteLine("Vem vill du söka på?");
-                    string namn = Console.ReadLine();
-                    var person = crud.Read(namn);
-                    Print(person);
+                    crud.Search();
                 }
                 else if (choice == "4")
                 {
@@ -103,7 +104,7 @@ namespace Familjeträd
         public void Create(Person person)
         {
             var db = new Databas();
-            var sqlString = "INSERT INTO Personer (Förnamn, Efternamn, Ålder, Stad, Född, Död, Mor, Far, MorID, FarID, BarnID) VALUES(@Förnamn, @Efternamn, @Ålder, @Stad, @Född, @Död, @Mor, @Far, @MorID, @FarID, @BarnID)";
+            var sqlString = "INSERT INTO Personer (Förnamn, Efternamn, Ålder, Födelseland, Födelsestad, Född, Död, Dödsland, Dödsstad, Mor, Far, MorID, FarID, BarnID) VALUES(@Förnamn, @Efternamn, @Ålder, @Födelseland, @Födelsestad, @Född, @Död, @Dödsland, @Dödsstad, @Mor, @Far, @MorID, @FarID, @BarnID)";
             try
             {
                 var connString = string.Format(db.ConnectionString, db.Familjeträd);
@@ -114,9 +115,12 @@ namespace Familjeträd
                     cmd.Parameters.AddWithValue("@Förnamn", person.Förnamn);
                     cmd.Parameters.AddWithValue("@Efternamn", person.Efternamn);
                     cmd.Parameters.AddWithValue("@Ålder", person.Ålder);
-                    cmd.Parameters.AddWithValue("@Stad", person.Stad);
+                    cmd.Parameters.AddWithValue("@Födelseland", person.Födelseland);
+                    cmd.Parameters.AddWithValue("@Födelsestad", person.Födelsestad);
                     cmd.Parameters.AddWithValue("@Född", person.Född);
                     cmd.Parameters.AddWithValue("@Död", person.Död);
+                    cmd.Parameters.AddWithValue("@Dödsland", person.Dödsland);
+                    cmd.Parameters.AddWithValue("@Dödsstad", person.Dödsstad);
                     cmd.Parameters.AddWithValue("@Mor", person.Mor);
                     cmd.Parameters.AddWithValue("@Far", person.Far);
                     cmd.Parameters.AddWithValue("@MorID", person.MorID);
@@ -139,14 +143,18 @@ namespace Familjeträd
         {
             var db = new Databas();
             db.SQL(@"UPDATE Personer SET Förnamn = @Förnamn, Efternamn = @Efternamn, Ålder = @Ålder,
-                    Stad = @Stad, Född = @Född, Död = @Död, Mor = @Mor, Far = @Far, MorID = @MorID, 
+                    Födelseland = @Födelseland, Födelsestad = @Födelsestad, Född = @Född, Död = @Död, Dödsland = @Dödsland, Dödsstad = @Dödsstad, 
+                    Mor = @Mor, Far = @Far, MorID = @MorID, 
                     FarID = @FarID, BarnID = @BarnID WHERE ID = @ID", db.Familjeträd,
                          ("@Förnamn", person.Förnamn),
                          ("@Efternamn", person.Efternamn),
                          ("@Ålder", person.Ålder.ToString()),
-                         ("@Stad", person.Stad),
+                         ("@Födelseland", person.Födelseland),
+                         ("@Födelsestad", person.Födelsestad),
                          ("@Född", person.Född.ToString()),
                          ("@Död", person.Död.ToString()),
+                         ("@Dödsland", person.Dödsland),
+                         ("@Dödsstad", person.Dödsstad),
                          ("@Mor", person.Mor),
                          ("@Far", person.Far),
                          ("@ID", person.ID.ToString()),
@@ -219,10 +227,10 @@ namespace Familjeträd
             }
         }
 
-        /// <summary>
-        /// Denna metoden visar syskon till en person i databasen.
-        /// </summary>
-        public void ListSiblings()
+            /// <summary>
+            /// Denna metoden visar syskon till en person i databasen.
+            /// </summary>
+            public void ListSiblings()
         {
             var crud = new CRUD();
             Console.WriteLine("Vem vill du visa syskon till?");
@@ -261,7 +269,7 @@ namespace Familjeträd
 
             Console.WriteLine("Vad för slags sökning vill du göra?\n\n(1) Lista upp personer som är födda ett visst årtal.");
             Console.WriteLine("(2) Lista upp förnamn som har ett förnamn börjar på en viss bokstav.\n(3) Lista upp personer som är från en viss stad.");
-            Console.WriteLine("(4) Lista upp personer som har ett efternamn som börjar på en viss bokstav.\n(5) Lista upp personer i bokstavsordning");
+            Console.WriteLine("(4) Lista upp personer som har ett efternamn som börjar på en viss bokstav.\n(5) Lista upp personer som är födda i ett visst land\n");
 
             string input = Console.ReadLine();
 
@@ -304,7 +312,7 @@ namespace Familjeträd
             {
                 Console.WriteLine("Skriv in staden.");
                 var choice = Console.ReadLine();
-                var people = GetDataTable("SELECT Förnamn, Efternamn FROM Personer WHERE Stad = @choice", Familjeträd, ("@choice", choice));
+                var people = GetDataTable("SELECT Förnamn, Efternamn FROM Personer WHERE Födelsestad = @choice", Familjeträd, ("@choice", choice));
                 if (people.Rows.Count == 0)
                 {
                     Console.WriteLine($"Det finns inga personer födda ifrån staden {choice}.");
@@ -335,6 +343,37 @@ namespace Familjeträd
                     }
                 }
             }
+            if (input == "5")
+            {
+                Console.WriteLine("Skriv in landet.");
+                string choice = Console.ReadLine();
+                var people = GetDataTable("SELECT Förnamn, Efternamn FROM Personer WHERE Födelseland LIKE @choice", Familjeträd, ("@choice", choice));
+                if (people.Rows.Count == 0)
+                {
+                    Console.WriteLine($"Det finns inga personer som är födda efter {choice}.");
+                }
+                else if (people.Rows.Count >= 1)
+                {
+                    foreach (DataRow row in people.Rows)
+                    {
+                        Console.WriteLine($"{row["Förnamn"].ToString()} {row["Efternamn"].ToString()}");
+                    }
+                }
+            }
+
+
+        }
+
+        /// <summary>
+        /// Denna metoden används för att kunna söka på personer i databasen.
+        /// </summary>
+        public void Search()
+        {
+            var crud = new CRUD();
+            Console.WriteLine("Vem vill du söka på?");
+            string namn = Console.ReadLine();
+            var person = crud.Read(namn);
+            Print(person);
         }
 
         /// <summary>
@@ -369,15 +408,20 @@ namespace Familjeträd
             if (person != null)
             {
                 // Defaultvärdet hos föräldrar sätts till 0 och " "
-                if (person.Ålder == 0 & person.Stad == " ")
+                if (person.Ålder == 0 & person.Födelsestad == " ")
                 {
                     Console.WriteLine($"{person.Förnamn} {person.Efternamn}");
                     Console.WriteLine($"\nDu har inte angett alla värden till {person.Förnamn} {person.Efternamn}.\nAnvänd menyval (5) för att lägga till mer information!\n");
                 }
                 else
                 {
-                    Console.WriteLine($"{person.Förnamn} {person.Efternamn}, är {person.Ålder} år och bor i {person.Stad}.");
-                    Console.WriteLine($"{person.Förnamn} föddes {person.Född} och dog {person.Död}.");
+                    Console.WriteLine($"{person.Förnamn} {person.Efternamn}, är {person.Ålder} år gammal.");
+                    Console.WriteLine($"{person.Förnamn} föddes {person.Född} i {person.Födelseland}, {person.Födelsestad}");
+                }
+                
+                if (person.Död > 0)
+                {
+                    Console.WriteLine($"och dog {person.Död} i {person.Dödsland}, {person.Dödsstad}");
                 }
 
                 if (person.Mor.Length > 1)
@@ -435,9 +479,12 @@ namespace Familjeträd
                     Förnamn = row["Förnamn"].ToString(),
                     Efternamn = row["Efternamn"].ToString(),
                     Ålder = (int)row["Ålder"],
-                    Stad = row["Stad"].ToString(),
+                    Födelseland = row["Födelseland"].ToString(),
+                    Födelsestad = row["Födelsestad"].ToString(),
                     Född = (int)row["Född"],
                     Död = (int)row["Död"],
+                    Dödsland = row["Dödsland"].ToString(),
+                    Dödsstad = row["Dödsstad"].ToString(),
                     Mor = row["Mor"].ToString(),
                     Far = row["Far"].ToString(),
                     ID = (int)row["ID"],
@@ -445,15 +492,6 @@ namespace Familjeträd
                     FarID = (int)row["FarID"],
                     BarnID = (int)row["BarnID"]
                 };
-            //catch
-            //{
-            //    return new Person
-            //    {
-            //        Förnamn = row["Förnamn"].ToString(),
-            //        Efternamn = row["Efternamn"].ToString(),
-            //        BarnID = (int)row["BarnID"]
-            //    };
-            //}
         }
 
         /// <summary>
@@ -525,14 +563,30 @@ namespace Familjeträd
             Console.WriteLine("Ålder: ");
             string ålderInput = Console.ReadLine();
             person.Ålder = Convert.ToInt32(ålderInput);
-            Console.WriteLine("Stad: ");
-            person.Stad = Console.ReadLine();
+            Console.WriteLine("Födelseland: ");
+            person.Födelseland = Console.ReadLine();
+            Console.WriteLine("Födelsestad: ");
+            person.Födelsestad = Console.ReadLine();
             Console.WriteLine("Födelseår: ");
             string föddInput = Console.ReadLine();
             person.Född = Convert.ToInt32(föddInput);
-            Console.WriteLine("Dödsår: ");
+            Console.WriteLine("Dödsår: (om personen fortfarande är vid liv, skriv in 0)");
             string dödInput = Console.ReadLine();
             person.Död = Convert.ToInt32(dödInput);
+
+            if (person.Död > 0)
+            {
+                Console.WriteLine("Dödsland: ");
+                person.Dödsland = Console.ReadLine();
+                Console.WriteLine("Dödsstad: ");
+                person.Dödsstad = Console.ReadLine();
+            }
+            else if (person.Död == 0)
+            {
+                person.Dödsland = " ";
+                person.Dödsstad = " ";
+            }
+
             Console.WriteLine("Mor: ");
             person.Mor = Console.ReadLine();
             Console.WriteLine("Far: ");
@@ -553,7 +607,7 @@ namespace Familjeträd
             if (DoesPersonExist(person))
             {
                 InputValues(person);
-                Console.WriteLine($"{person.Ålder}");
+                //Console.WriteLine($"{person.Ålder}"); ???
                 Update(person);
                 Console.WriteLine("Personen har blivit uppdaterad.");
             }
@@ -620,15 +674,19 @@ namespace Familjeträd
         public void DefaultValue(Person person)
         {
             person.Ålder = 0;
-            person.Stad = " ";
+            person.Födelseland = " ";
+            person.Födelsestad = " ";
             person.Född = 0;
             person.Död = 0;
+            person.Dödsland = " ";
+            person.Dödsstad = " ";
             person.Mor = " ";
             person.Far = " ";
         }
 
         /// <summary>
         /// Denna metoden finns för att man ska kunna ändra ett enskiljt värde hos en person.
+        /// Man kan även ändra mor/far till en person som redan finns, om personen inte finns så skapas en ny förälder.
         /// </summary>
         public void EditPerson()
         {
@@ -643,8 +701,8 @@ namespace Familjeträd
             }
             else if (person != null)
             {
-                Console.WriteLine("\nVad vill du ändra?");
-                Console.WriteLine("(1) Förnamn\n(2) Efternamn\n(3) Ålder\n(4) Stad \n(5) Födelsedatum \n(6) Dödsår\n(7) Mor \n(8) Far");
+                Console.WriteLine("\nVad vill du ändra?\n");
+                Console.WriteLine("(1) Förnamn\n(2) Efternamn\n(3) Ålder\n(4) Födelseland \n(5) Födelsestad \n(6) Födelseår\n(7) Dödsår\n(8) Dödsland\n(9) Dödsstad\n(10) Mor \n(11) Far\n");
                 var input = Console.ReadLine();
 
                 if (input == "1")
@@ -671,12 +729,19 @@ namespace Familjeträd
                 }
                 else if (input == "4")
                 {
-                    Console.WriteLine("Skriv in den nya staden.");
-                    person.Stad = Console.ReadLine();
+                    Console.WriteLine("Skriv in det nya födelselandet.");
+                    person.Födelseland = Console.ReadLine();
                     crud.Update(person);
-                    Console.WriteLine($"Staden ändrades till {person.Stad}");
+                    Console.WriteLine($"Födelsedatumet ändrades till {person.Födelseland}");
                 }
                 else if (input == "5")
+                {
+                    Console.WriteLine("Skriv in den nya födelsestaden.");
+                    person.Födelsestad = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Staden ändrades till {person.Födelsestad}");
+                }
+                else if (input == "6")
                 {
                     Console.WriteLine("Skriv in det nya födelsedatumet.");
                     var föddInput = Console.ReadLine();
@@ -684,7 +749,7 @@ namespace Familjeträd
                     crud.Update(person);
                     Console.WriteLine($"Födelsedatumet ändrades till {person.Född}");
                 }
-                else if (input == "6")
+                else if (input == "7")
                 {
                     Console.WriteLine("Skriv in det nya dödsdatumet.");
                     var dödInput = Console.ReadLine();
@@ -692,12 +757,26 @@ namespace Familjeträd
                     crud.Update(person);
                     Console.WriteLine($"Dödsdatumet ändrades till {person.Död}");
                 }
-                else if (input == "7")
+                else if (input == "8")
+                {
+                    Console.WriteLine("Skriv in det nya dödslandet.");
+                    person.Dödsland = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Landet ändrades till {person.Dödsland}");
+                }
+                else if (input == "9")
+                {
+                    Console.WriteLine("Skriv in den nya dödsstaden.");
+                    person.Dödsstad = Console.ReadLine();
+                    crud.Update(person);
+                    Console.WriteLine($"Staden ändrades till {person.Dödsstad}");
+                }
+                else if (input == "10")
                 {
                     bool loop = true;
                     while (loop)
                     {
-                        Console.WriteLine($"(1) Redigera bara namnet.\n(2) Ändra så att modern inte är släkt med {person.Förnamn}.");
+                        Console.WriteLine($"(1) Redigera bara namnet.\n(2) Ändra till en annan moder.");
                         var morInput = Console.ReadLine();
 
                         if (morInput == "1")
@@ -722,23 +801,23 @@ namespace Familjeträd
                         }
                         else if (morInput == "2")
                         {
-                            var mor = crud.Read(person.MorID.ToString());
                             Console.WriteLine($"Skriv in det nya namnet på modern till {person.Förnamn}.");
-                            person.Mor = Console.ReadLine();
+                            var nameInput = Console.ReadLine();
+                            var mor = crud.Read(nameInput);
                             if (mor != null)
                             {
-                                mor.Förnamn = person.Mor;   
+                                mor.Förnamn = nameInput;
                                 mor.Efternamn = person.Efternamn;
                                 person.MorID = mor.ID;
                                 Console.WriteLine($"Moderns namn ändrades till {person.Mor}.");
                                 crud.Update(mor);
                                 crud.Update(person);
                             }
-                            else if (DoesPersonExist(mor) == false)
+                            else if (mor == null)
                             {
                                 Console.WriteLine("Modern finns inte i databasen.");
                                 var createMother = new Person();
-                                createMother.Förnamn = person.Mor;
+                                createMother.Förnamn = nameInput;
                                 createMother.Efternamn = person.Efternamn;
                                 createMother.BarnID = person.ID;
 
@@ -756,12 +835,12 @@ namespace Familjeträd
                     }
                 }
 
-                else if (input == "8")
+                else if (input == "11")
                 {
                     bool loop = true;
                     while (loop)
                     {
-                        Console.WriteLine($"(1) Redigera bara namnet.\n(2) Ändra så att fadern inte är släkt med {person.Förnamn}.");
+                        Console.WriteLine($"(1) Redigera bara namnet.\n(2) Ändra till en annan fader.");
                         var farInput = Console.ReadLine();
 
                         if (farInput == "1")
@@ -786,23 +865,24 @@ namespace Familjeträd
                         }
                         else if (farInput == "2")
                         {
-                            var far = crud.Read(person.FarID.ToString());
-                            Console.WriteLine($"Skriv in det nya namnet på fadern till {person.Förnamn}.");
-                            person.Mor = Console.ReadLine();
-                            if (DoesPersonExist(far))
+                            Console.WriteLine($"Skriv in det nya förnamnet på fadern till {person.Förnamn}.");
+                            var nameInput = Console.ReadLine();
+                            var far = crud.Read(nameInput);
+                            if (far != null)
                             {
-                                far.Förnamn = person.Far;
+                                far.Förnamn = nameInput;
+                                person.Far = far.Förnamn;
                                 far.Efternamn = person.Efternamn;
                                 person.FarID = far.ID;
-                                Console.WriteLine($"Faderns namn ändrades till {person.Far}.");
+                                Console.WriteLine($"Ändrade förälder till {person.Far}.");
                                 crud.Update(far);
                                 crud.Update(person);
                             }
-                            else if (DoesPersonExist(far) == false)
+                            else if (far == null)
                             {
                                 Console.WriteLine("Fadern finns inte i databasen.");
                                 var createFather = new Person();
-                                createFather.Förnamn = person.Far;
+                                createFather.Förnamn = nameInput;
                                 createFather.Efternamn = person.Efternamn;
                                 createFather.BarnID = person.ID;
 

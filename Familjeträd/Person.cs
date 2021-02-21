@@ -15,9 +15,12 @@ namespace Familjeträd
         public string Förnamn { get; set; }
         public string Efternamn { get; set; }
         public int Ålder { get; set; }
-        public string Stad { get; set; }
+        public string Födelseland { get; set; }
+        public string Födelsestad { get; set; }
         public int Född { get; set; }
         public int Död { get; set; }
+        public string Dödsland { get; set; }
+        public string Dödsstad { get; set; }
         public string Mor { get; set; }
         public string Far { get; set; }
         public int MorID { get; set; }
