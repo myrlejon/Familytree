@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Familjeträd
 {
+    /// <summary>
+    /// Denna klassen används för att ändra värden i programmet för att sedan skicka tillbaka dom till SQL databasen med hjälp av parametrar.
+    /// </summary>
     class Person
     {
         public int ID { get; set; }

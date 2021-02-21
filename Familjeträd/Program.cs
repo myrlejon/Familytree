@@ -6,12 +6,16 @@ using System.Threading.Tasks;
 
 namespace Familjeträd
 {
-    class Program : Databas
+    class Program : CRUD
     {
+        /// <summary>
+        /// Main metoden innehåller två metoder: Intro och Meny. Du kan läsa mer om dessa metoder i CRUD.cs klassen
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
-            CRUD.Intro();
-            CRUD.Meny();
+            Intro();
+            Meny();
         }
     }
 }
