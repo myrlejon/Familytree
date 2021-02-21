@@ -448,22 +448,7 @@ namespace Familjeträd
                 Console.WriteLine("Person not found");
             }
         }
-        /// <summary>
-        /// Denna metoden finns för att kolla om en person existerar i databasen eller inte.
-        /// </summary>
-        /// <param name="person"></param>
-        /// <returns></returns>
-        private static bool DoesPersonExist(Person person)
-        {
-            if (person != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+
         /// <summary>
         /// Denna metoden returnerar variabler till Read och ReadID metoderna.
         /// </summary>
@@ -509,17 +494,17 @@ namespace Familjeträd
                 var far = Read($"{person.Far} {person.Efternamn}");
                 var barn = ReadID(person.BarnID);
 
-                if (DoesPersonExist(mor) == true)
+                if (mor != null)
                 {
                     mor.BarnID = 0;
                     crud.Update(mor);
                 }
-                else if (DoesPersonExist(far) == true)
+                else if (far != null)
                 {
                     far.BarnID = 0;
                     crud.Update(far);
                 }
-                else if (DoesPersonExist(barn) == true)
+                else if (barn != null)
                 {
                     if (barn.MorID == person.ID)
                     {
@@ -601,14 +586,14 @@ namespace Familjeträd
             var input = Console.ReadLine();
             person = crud.Read(input);
 
-            if (DoesPersonExist(person))
+            if (person != null)
             {
                 InputValues(person);
                 //Console.WriteLine($"{person.Ålder}"); ???
                 Update(person);
                 Console.WriteLine("Personen har blivit uppdaterad.");
             }
-            else if (DoesPersonExist(person) == false)
+            else if (person == null)
             {
                 Console.WriteLine("Personen finns inte i databasen.");
             }
