@@ -264,9 +264,6 @@ namespace Familjeträd
         {
             var db = new Databas();
             var person = new Person();
-            //var list = new List<string>();
-            DataTable dt;
-
             Console.WriteLine("Vad för slags sökning vill du göra?\n\n(1) Lista upp personer som är födda ett visst årtal.");
             Console.WriteLine("(2) Lista upp förnamn som har ett förnamn börjar på en viss bokstav.\n(3) Lista upp personer som är från en viss stad.");
             Console.WriteLine("(4) Lista upp personer som har ett efternamn som börjar på en viss bokstav.\n(5) Lista upp personer som är födda i ett visst land\n");
