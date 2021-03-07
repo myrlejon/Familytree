@@ -38,8 +38,9 @@ namespace Familjeträd
                             morID int,
                             farID int,
                             barnID int", db.Familjeträd);
+                db.CreatePeople();
                 Console.WriteLine($"Skapade databasen {db.Familjeträd}");
-                Console.WriteLine("Börja med att skapa personer med hjälp av menyalternativ (1)!");
+
             }
             else if (db.DoesDatabasExist(db.Familjeträd))
             {

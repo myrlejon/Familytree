@@ -14,7 +14,7 @@ namespace Familjeträd
         /// <summary>
         /// ConnectionString används för att koppla upp sig till Familjeträd och Master. 
         /// </summary>
-        public string ConnectionString { get; set; } = "Data Source=.\SQLExpress; Integrated Security = True;database={0}";
+        public string ConnectionString { get; set; } = "Data Source=DESKTOP-NJ9EFR0; Integrated Security = True;database={0}";
         public string Familjeträd { get; set; } = "Familjeträd";
         public string Master { get; set; } = "master";
 
@@ -144,5 +144,28 @@ namespace Familjeträd
             SQL($"CREATE TABLE {datatableName} ({fields});", databaseConnection);
         }
 
+        /// <summary>
+        /// Denna metoden skapar ett default familjeträd för användaren.
+        /// </summary>
+        internal void CreatePeople()
+        {
+            SQL($@"insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Nils', 'Odén', 21, 'Sverige', 'Onsala', 1999, 0, ' ', ' ', 'Åsa', 'Svante', 2, 3, 0);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Åsa', 'Odén', 52, 'Sverige', 'Jönköping', 1969, 0, ' ', ' ', 'Gunilla', 'Olle', 6, 7, 1);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Svante', 'Odén', 54, 'Sverige', 'Lindome', 1967, 0, ' ', ' ', 'Yvonne', 'Ulf', 8, 9, 1);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Melissa', 'Odén', 11, 'Sverige', 'Onsala', 2009, 0, ' ', ' ', 'Åsa', 'Svante', 2, 3, 0);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Louise', 'Odén', 24, 'Sverige', 'Onsala', 1997, 0, ' ', ' ', 'Åsa', 'Svante', 2, 3, 0);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Gunilla', 'Odén', 80, 'Sverige', 'Jönköping', 1945, 0, ' ', ' ', 'Marianne', 'Karsten', 16, 17, 2);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Olle', 'Odén', 76, 'Sverige', 'Jönköping', 1942, 2018, 'Sverige', 'Jönköping', 'Ylva', 'Olof', 14, 15, 2);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Yvonne', 'Odén', 78, 'Sverige', 'Lindome', 1943, 0, ' ', ' ', 'Eva', 'Göran', 12, 13, 3);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Ulf', 'Odén', 80, 'Sverige', 'Lindome', 1941, 0, ' ', ' ', 'Maj', 'Serge', 10, 11, 3);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Maj', 'Odén', 86, 'Sverige', 'Lindome', 1913, 1998, 'Sverige', 'Lindome', ' ', ' ', 0, 0, 9);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Serge', 'Odén', 97, 'Sverige', 'Lindome', 1917, 2004, 'Sverige', 'Lindome', ' ', ' ', 0, 0, 9);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Eva', 'Odén', 64, 'Sverige', 'Stockholm', 1909, 1973, 'Sverige', 'Borås', ' ', ' ', 0, 0, 8);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Göran', 'Odén', 72, 'Sverige', 'Stockholm', 1905, 1971, 'Sverige', 'Borås', ' ', ' ', 0, 0, 8);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Ylva', 'Odén', 79, 'Sverige', 'Jönköping', 1901, 1980, 'Sverige', 'Jönköping', ' ', ' ', 0, 0, 7);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Olof', 'Odén', 81, 'Sverige', 'Jönköping', 1903, 1984, 'Sverige', 'Jönköping', ' ', ' ', 0, 0, 7);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Marianne', 'Odén', 81, 'Sverige', 'Jönköping', 1900, 1981, 'Sverige', 'Jönköping', ' ', ' ', 0, 0, 6);
+                   insert into Personer (förnamn, efternamn, ålder, födelseland, födelsestad, född, död, dödsland, dödsstad, mor, far, morID, farID, barnID) values ('Karsten', 'Odén', 89, 'Sverige', 'Jönköping', 1910, 1999, 'Sverige', 'Jönköping', ' ', ' ', 0, 0, 6);", Familjeträd);
+        }
     }
 }
