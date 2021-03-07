@@ -14,7 +14,7 @@ namespace Familjeträd
         /// <summary>
         /// ConnectionString används för att koppla upp sig till Familjeträd och Master. 
         /// </summary>
-        public string ConnectionString { get; set; } = "Data Source=DESKTOP-NJ9EFR0; Integrated Security = True;database={0}";
+        public string ConnectionString { get; set; } = "Data Source=.\SQLExpress; Integrated Security = True;database={0}";
         public string Familjeträd { get; set; } = "Familjeträd";
         public string Master { get; set; } = "master";
 
